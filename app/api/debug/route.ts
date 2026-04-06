@@ -12,28 +12,33 @@ export async function GET() {
     })
   }
 
-  async function probe(path: string) {
+  async function tryAuth(label: string, headers: Record<string, string>) {
     try {
-      const res = await fetch(`${baseUrl}${path}`, {
-        headers: { Authorization: `Bearer ${apiKey}` },
-        cache: 'no-store',
-      })
+      const res = await fetch(`${baseUrl}/customers`, { headers, cache: 'no-store' })
       const text = await res.text()
       let body: unknown
-      try { body = JSON.parse(text) } catch { body = text.slice(0, 500) }
-      return { status: res.status, ok: res.ok, body }
+      try { body = JSON.parse(text) } catch { body = text.slice(0, 300) }
+      return { label, status: res.status, ok: res.ok, body }
     } catch (e) {
-      return { error: String(e) }
+      return { label, error: String(e) }
     }
   }
 
-  const [customers] = await Promise.all([probe('/customers')])
+  const results = await Promise.all([
+    tryAuth('Bearer',    { Authorization: `Bearer ${apiKey}` }),
+    tryAuth('ApiKey',    { Authorization: `ApiKey ${apiKey}` }),
+    tryAuth('x-api-key', { 'x-api-key': apiKey }),
+    tryAuth('api-key',   { 'api-key': apiKey }),
+  ])
+
+  const working = results.find(r => r.ok)
 
   return NextResponse.json({
     env: {
       UNBLOCKPAY_BASE_URL: baseUrl,
       UNBLOCKPAY_API_KEY: apiKey.slice(0, 8) + '...',
     },
-    customers,
+    working_format: working?.label ?? 'none — all returned non-200',
+    results,
   })
 }
