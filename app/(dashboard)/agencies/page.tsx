@@ -5,7 +5,7 @@ import { Customer, Transaction, TransactionStatus } from '@/types'
 import StatusBadge from '@/components/StatusBadge'
 import MockDataBanner from '@/components/MockDataBanner'
 
-async function fetchAgencies() {
+async function fetchClientes() {
   const [{ data: customers, mock: mockC }, { data: transactions, mock: mockT }] =
     await Promise.all([getStoredCustomers(), getStoredTransactions()])
 
@@ -55,65 +55,65 @@ function formatUSD(amount: number) {
 }
 
 export default async function AgenciesPage() {
-  const { list, mock } = await fetchAgencies()
+  const { list, mock } = await fetchClientes()
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Agências</h1>
+        <h1 className="text-xl font-semibold text-gray-900">Clientes</h1>
         <p className="mt-0.5 text-sm text-gray-500">
-          {list.length} agência{list.length !== 1 ? 's' : ''} cadastrada{list.length !== 1 ? 's' : ''}
+          {list.length} cliente{list.length !== 1 ? 's' : ''} cadastrado{list.length !== 1 ? 's' : ''}
         </p>
       </div>
 
       <MockDataBanner show={mock} />
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
         <table className="min-w-full divide-y divide-gray-100">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                Agência
+              <th className="px-4 py-3 sm:px-6 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                Cliente
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+              <th className="px-4 py-3 sm:px-6 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
                 Status
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">
+              <th className="px-4 py-3 sm:px-6 text-right text-xs font-medium uppercase tracking-wide text-gray-500">
                 TPV Total
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">
+              <th className="hidden sm:table-cell px-4 py-3 sm:px-6 text-right text-xs font-medium uppercase tracking-wide text-gray-500">
                 Transações
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+              <th className="hidden md:table-cell px-4 py-3 sm:px-6 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
                 Última TX
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {list.map((agency) => (
-              <tr key={agency.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4">
-                  <div className="text-sm font-medium text-gray-900">{agency.name}</div>
-                  <div className="text-xs text-gray-400">{agency.email}</div>
+            {list.map((cliente) => (
+              <tr key={cliente.id} className="hover:bg-gray-50 transition-colors">
+                <td className="px-4 py-3 sm:px-6 sm:py-4">
+                  <div className="text-sm font-medium text-gray-900">{cliente.name}</div>
+                  <div className="text-xs text-gray-400">{cliente.email}</div>
                 </td>
-                <td className="px-6 py-4">
-                  <StatusBadge status={agency.status} />
+                <td className="px-4 py-3 sm:px-6 sm:py-4">
+                  <StatusBadge status={cliente.status} />
                 </td>
-                <td className="px-6 py-4 text-right text-sm font-semibold text-gray-800">
-                  {formatUSD(agency.tpv)}
+                <td className="px-4 py-3 sm:px-6 sm:py-4 text-right text-sm font-semibold text-gray-800">
+                  {formatUSD(cliente.tpv)}
                 </td>
-                <td className="px-6 py-4 text-right text-sm text-gray-600">
-                  {agency.tx_count}
+                <td className="hidden sm:table-cell px-4 py-3 sm:px-6 sm:py-4 text-right text-sm text-gray-600">
+                  {cliente.tx_count}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-400">
-                  {formatDate(agency.last_tx_at)}
+                <td className="hidden md:table-cell px-4 py-3 sm:px-6 sm:py-4 text-sm text-gray-400">
+                  {formatDate(cliente.last_tx_at)}
                 </td>
               </tr>
             ))}
             {list.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-400">
-                  Nenhuma agência encontrada.
+                <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-400">
+                  Nenhum cliente encontrado.
                 </td>
               </tr>
             )}
