@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv'
+import { Redis } from '@upstash/redis'
 import { Customer, Transaction } from '@/types'
 import { MOCK_CUSTOMERS, MOCK_TRANSACTIONS } from '@/lib/mock-data'
 
@@ -7,7 +7,14 @@ const CUSTOMER_KEY = 'unbound:customers'
 const MAX_TRANSACTIONS = 2000
 
 function isKvConfigured(): boolean {
-  return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
+  return !!(process.env.storage_KV_REST_API_URL && process.env.storage_KV_REST_API_TOKEN)
+}
+
+function getRedis(): Redis {
+  return new Redis({
+    url: process.env.storage_KV_REST_API_URL!,
+    token: process.env.storage_KV_REST_API_TOKEN!,
+  })
 }
 
 // ─── Transactions ────────────────────────────────────────────────
@@ -17,7 +24,7 @@ export async function getStoredTransactions(): Promise<{ data: Transaction[]; mo
     return { data: MOCK_TRANSACTIONS, mock: true }
   }
   try {
-    const stored = await kv.get<Transaction[]>(TX_KEY)
+    const stored = await getRedis().get<Transaction[]>(TX_KEY)
     if (!stored || stored.length === 0) {
       return { data: MOCK_TRANSACTIONS, mock: true }
     }
@@ -29,8 +36,9 @@ export async function getStoredTransactions(): Promise<{ data: Transaction[]; mo
 
 export async function upsertTransaction(tx: Transaction): Promise<void> {
   if (!isKvConfigured()) return
+  const redis = getRedis()
   try {
-    const stored = (await kv.get<Transaction[]>(TX_KEY)) ?? []
+    const stored = (await redis.get<Transaction[]>(TX_KEY)) ?? []
     const idx = stored.findIndex((t) => t.id === tx.id)
     if (idx >= 0) {
       stored[idx] = tx
@@ -38,7 +46,7 @@ export async function upsertTransaction(tx: Transaction): Promise<void> {
       stored.unshift(tx) // newest first
       if (stored.length > MAX_TRANSACTIONS) stored.splice(MAX_TRANSACTIONS)
     }
-    await kv.set(TX_KEY, stored)
+    await redis.set(TX_KEY, stored)
   } catch (err) {
     console.error('[storage] upsertTransaction error:', err)
   }
@@ -51,7 +59,7 @@ export async function getStoredCustomers(): Promise<{ data: Customer[]; mock: bo
     return { data: MOCK_CUSTOMERS, mock: true }
   }
   try {
-    const stored = await kv.get<Customer[]>(CUSTOMER_KEY)
+    const stored = await getRedis().get<Customer[]>(CUSTOMER_KEY)
     if (!stored || stored.length === 0) {
       return { data: MOCK_CUSTOMERS, mock: true }
     }
@@ -63,15 +71,16 @@ export async function getStoredCustomers(): Promise<{ data: Customer[]; mock: bo
 
 export async function upsertCustomer(customer: Customer): Promise<void> {
   if (!isKvConfigured()) return
+  const redis = getRedis()
   try {
-    const stored = (await kv.get<Customer[]>(CUSTOMER_KEY)) ?? []
+    const stored = (await redis.get<Customer[]>(CUSTOMER_KEY)) ?? []
     const idx = stored.findIndex((c) => c.id === customer.id)
     if (idx >= 0) {
       stored[idx] = customer
     } else {
       stored.push(customer)
     }
-    await kv.set(CUSTOMER_KEY, stored)
+    await redis.set(CUSTOMER_KEY, stored)
   } catch (err) {
     console.error('[storage] upsertCustomer error:', err)
   }
