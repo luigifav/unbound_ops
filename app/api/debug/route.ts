@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 export async function GET() {
   const baseUrl = process.env.UNBLOCKPAY_BASE_URL
   const apiKey = process.env.UNBLOCKPAY_API_KEY
-  const webhookSecret = process.env.UNBLOCKPAY_WEBHOOK_SECRET
+  const webhookSecret = process.env.UNBLOCKPAY_WEBHOOK_TOKEN ?? process.env.UNBLOCKPAY_WEBHOOK_SECRET
 
   if (!baseUrl || !apiKey) {
     return NextResponse.json({ error: 'Env vars missing', baseUrl: baseUrl ?? null, hasKey: !!apiKey })
