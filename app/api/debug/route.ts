@@ -13,7 +13,7 @@ export async function GET() {
   // Show domain only (no credentials)
   const urlSafe = url.replace(/^(https?:\/\/[^/]+)(.*)$/, '$1$2').slice(0, 60)
 
-  const attempts = [
+  const attempts: { label: string; headers: Record<string, string> }[] = [
     { label: 'x-api-key only (no Authorization)', headers: { 'x-api-key': key } },
     { label: 'X-API-Key only (no Authorization)', headers: { 'X-API-Key': key } },
     { label: 'Authorization raw', headers: { Authorization: key } },
