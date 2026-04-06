@@ -1,4 +1,49 @@
+import { SignatureV4 } from '@smithy/signature-v4'
+import { HttpRequest } from '@smithy/protocol-http'
+import { Sha256 } from '@aws-crypto/sha256-js'
 import { ApiResponse, Customer, Transaction } from '@/types'
+
+function hasSigV4Config() {
+  return !!(
+    process.env.AWS_ACCESS_KEY_ID &&
+    process.env.AWS_SECRET_ACCESS_KEY
+  )
+}
+
+async function signedFetch(url: string): Promise<Response> {
+  const parsed = new URL(url)
+  const region = process.env.AWS_REGION ?? 'us-east-1'
+  const apiKey = process.env.UNBLOCKPAY_API_KEY?.trim() ?? ''
+
+  const request = new HttpRequest({
+    method: 'GET',
+    hostname: parsed.hostname,
+    path: parsed.pathname + (parsed.search || ''),
+    headers: {
+      host: parsed.hostname,
+      'content-type': 'application/json',
+      ...(apiKey ? { 'x-api-key': apiKey } : {}),
+    },
+  })
+
+  const signer = new SignatureV4({
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+    region,
+    service: 'execute-api',
+    sha256: Sha256,
+  })
+
+  const signed = await signer.sign(request)
+
+  return fetch(url, {
+    method: 'GET',
+    headers: signed.headers as Record<string, string>,
+    cache: 'no-store',
+  })
+}
 
 async function callApi<T>(path: string): Promise<ApiResponse<T>> {
   const baseUrl = process.env.UNBLOCKPAY_BASE_URL
@@ -8,14 +53,22 @@ async function callApi<T>(path: string): Promise<ApiResponse<T>> {
     return { data: null, error: 'Missing API configuration', success: false }
   }
 
+  const url = `${baseUrl}${path}`
+
   try {
-    const res = await fetch(`${baseUrl}${path}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: apiKey.trim(),
-      },
-      cache: 'no-store',
-    })
+    let res: Response
+
+    if (hasSigV4Config()) {
+      res = await signedFetch(url)
+    } else {
+      res = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: apiKey.trim(),
+        },
+        cache: 'no-store',
+      })
+    }
 
     const text = await res.text()
 
