@@ -8,19 +8,34 @@ export async function GET() {
     return NextResponse.json({ error: 'Env vars missing' })
   }
 
-  try {
-    const res = await fetch(`${baseUrl}/v1/customers`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: apiKey.trim(),
-      },
-      cache: 'no-store',
-    })
-    const text = await res.text()
-    let body: unknown
-    try { body = JSON.parse(text) } catch { body = text.slice(0, 500) }
-    return NextResponse.json({ status: res.status, ok: res.ok, body })
-  } catch (e) {
-    return NextResponse.json({ error: String(e) })
+  const key = apiKey.trim()
+  const url = `${baseUrl}/v1/customers`
+
+  const attempts = [
+    { label: 'x-api-key header', headers: { 'x-api-key': key } },
+    { label: 'Authorization raw', headers: { Authorization: key } },
+    { label: 'Authorization Bearer', headers: { Authorization: `Bearer ${key}` } },
+    { label: 'Authorization ApiKey', headers: { Authorization: `ApiKey ${key}` } },
+    { label: 'api-key header', headers: { 'api-key': key } },
+    { label: 'X-API-Key header', headers: { 'X-API-Key': key } },
+  ]
+
+  const results: Record<string, unknown>[] = []
+
+  for (const attempt of attempts) {
+    try {
+      const res = await fetch(url, {
+        headers: { 'Content-Type': 'application/json', ...attempt.headers },
+        cache: 'no-store',
+      })
+      const text = await res.text()
+      let body: unknown
+      try { body = JSON.parse(text) } catch { body = text.slice(0, 300) }
+      results.push({ label: attempt.label, status: res.status, ok: res.ok, body })
+    } catch (e) {
+      results.push({ label: attempt.label, error: String(e) })
+    }
   }
+
+  return NextResponse.json({ url, results })
 }
