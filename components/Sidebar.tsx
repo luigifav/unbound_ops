@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 const navLinks = [
   { href: '/', label: 'Overview', icon: '◈' },
   { href: '/transactions', label: 'Transações', icon: '↔' },
-  { href: '/agencies', label: 'Agências', icon: '⊞' },
+  { href: '/agencies', label: 'Clientes', icon: '⊞' },
 ]
 
 export default function Sidebar() {
@@ -19,7 +19,7 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="flex h-screen w-56 flex-shrink-0 flex-col border-r border-gray-200 bg-white">
+    <aside className="hidden lg:flex h-screen w-56 flex-shrink-0 flex-col border-r border-gray-200 bg-white">
       {/* Logo */}
       <div className="flex h-16 items-center px-5 border-b border-gray-100">
         <span className="text-lg font-bold" style={{ color: '#7C3AED' }}>

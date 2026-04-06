@@ -99,7 +99,7 @@ export default function TransactionsPage() {
       <MockDataBanner show={mock} />
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3">
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
@@ -129,7 +129,7 @@ export default function TransactionsPage() {
           value={idSearch}
           onChange={(e) => setIdSearch(e.target.value)}
           placeholder="Buscar por ID..."
-          className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 min-w-48"
+          className="w-full sm:w-auto sm:min-w-48 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
         />
       </div>
 
@@ -139,23 +139,23 @@ export default function TransactionsPage() {
           Carregando transações...
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
           <table className="min-w-full divide-y divide-gray-100">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">ID</th>
+                <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">ID</th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Tipo</th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Status</th>
                 <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Valor</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Rail</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Agência</th>
+                <th className="hidden md:table-cell px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Rail</th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Cliente</th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Data</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {paginated.map((tx) => (
                 <tr key={tx.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 font-mono text-xs text-gray-600">
+                  <td className="hidden sm:table-cell px-4 py-3 font-mono text-xs text-gray-600">
                     {tx.id.slice(0, 8)}...
                   </td>
                   <td className="px-4 py-3">
@@ -171,7 +171,7 @@ export default function TransactionsPage() {
                       minimumFractionDigits: 2,
                     }).format(tx.sender.amount)}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-500">
+                  <td className="hidden md:table-cell px-4 py-3 font-mono text-xs text-gray-500">
                     {tx.sender.payment_rail}
                   </td>
                   <td className="px-4 py-3 text-xs text-gray-500">

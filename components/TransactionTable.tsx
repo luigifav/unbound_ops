@@ -36,14 +36,14 @@ export default function TransactionTable({ transactions, limit }: Props) {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
       <table className="min-w-full divide-y divide-gray-100">
         <thead className="bg-gray-50">
           <tr>
             <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
               ID
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+            <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
               Tipo
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
@@ -52,7 +52,7 @@ export default function TransactionTable({ transactions, limit }: Props) {
             <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">
               Valor
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+            <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
               Rail
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
@@ -66,7 +66,7 @@ export default function TransactionTable({ transactions, limit }: Props) {
               <td className="px-4 py-3 font-mono text-xs text-gray-600">
                 {tx.id.slice(0, 8)}...
               </td>
-              <td className="px-4 py-3">
+              <td className="hidden sm:table-cell px-4 py-3">
                 <span
                   className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                     tx.type === TransactionType.on_ramp
@@ -83,7 +83,7 @@ export default function TransactionTable({ transactions, limit }: Props) {
               <td className="px-4 py-3 text-right text-sm font-medium text-gray-800">
                 {formatAmount(tx.sender.amount, tx.sender.currency)}
               </td>
-              <td className="px-4 py-3 text-xs text-gray-500 font-mono">
+              <td className="hidden sm:table-cell px-4 py-3 text-xs text-gray-500 font-mono">
                 {tx.sender.payment_rail}
               </td>
               <td className="px-4 py-3 text-xs text-gray-400">

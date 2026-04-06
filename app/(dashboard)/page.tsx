@@ -63,7 +63,7 @@ export default async function OverviewPage() {
         <StatCard label="Ticket Médio" value={formatUSD(avg_ticket)} />
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="rounded-lg border border-gray-200 bg-white p-4 sm:p-6 shadow-sm">
         <h2 className="mb-4 text-sm font-semibold text-gray-700">
           TPV — últimos 14 dias
         </h2>
