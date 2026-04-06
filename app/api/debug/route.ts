@@ -15,12 +15,13 @@ export async function GET() {
 
   // Test different paths — list vs individual resource
   const pathsToTest = [
+    '/v1/customer',
     '/v1/customers',
+    '/v1/customer/test-id-123',
     '/v1/customers/test-id-123',
     '/v1/transactions',
     '/v1/user',
     '/v1/me',
-    '/v1/accounts',
   ]
 
   const results: Record<string, unknown>[] = []
