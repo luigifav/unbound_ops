@@ -8,35 +8,19 @@ export async function GET() {
     return NextResponse.json({ error: 'Env vars missing' })
   }
 
-  async function probe(path: string) {
-    try {
-      const res = await fetch(`${baseUrl}${path}`, {
-        headers: { Authorization: `Bearer ${apiKey}` },
-        cache: 'no-store',
-      })
-      const text = await res.text()
-      let body: unknown
-      try { body = JSON.parse(text) } catch { body = text.slice(0, 200) }
-      return { path, status: res.status, ok: res.ok, body }
-    } catch (e) {
-      return { path, error: String(e) }
-    }
+  try {
+    const res = await fetch(`${baseUrl}/v1/customers`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: apiKey.trim(),
+      },
+      cache: 'no-store',
+    })
+    const text = await res.text()
+    let body: unknown
+    try { body = JSON.parse(text) } catch { body = text.slice(0, 500) }
+    return NextResponse.json({ status: res.status, ok: res.ok, body })
+  } catch (e) {
+    return NextResponse.json({ error: String(e) })
   }
-
-  const paths = [
-    '/customers',
-    '/v1/customers',
-    '/v2/customers',
-    '/api/customers',
-    '/api/v1/customers',
-  ]
-
-  const results = await Promise.all(paths.map(probe))
-  const working = results.find(r => r.ok)
-
-  return NextResponse.json({
-    base_url: baseUrl,
-    working_path: working?.path ?? 'none',
-    results,
-  })
 }

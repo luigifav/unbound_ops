@@ -5,29 +5,24 @@ async function callApi<T>(path: string): Promise<ApiResponse<T>> {
   const apiKey = process.env.UNBLOCKPAY_API_KEY
 
   if (!baseUrl || !apiKey) {
-    console.error('[unblockpay] Missing env vars — UNBLOCKPAY_BASE_URL or UNBLOCKPAY_API_KEY not set')
     return { data: null, error: 'Missing API configuration', success: false }
   }
 
   try {
-    const url = `${baseUrl}${path}`
-    console.log(`[unblockpay] GET ${url}`)
-
-    const res = await fetch(url, {
+    const res = await fetch(`${baseUrl}${path}`, {
       headers: {
-        Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
+        Authorization: apiKey.trim(),
       },
       cache: 'no-store',
     })
 
     const text = await res.text()
-    console.log(`[unblockpay] ${path} → ${res.status} | body: ${text.slice(0, 300)}`)
 
     if (!res.ok) {
       return {
         data: null,
-        error: `API error: ${res.status} ${res.statusText} — ${text.slice(0, 200)}`,
+        error: `API error: ${res.status} — ${text.slice(0, 200)}`,
         success: false,
       }
     }
@@ -36,22 +31,20 @@ async function callApi<T>(path: string): Promise<ApiResponse<T>> {
     try {
       data = JSON.parse(text)
     } catch {
-      return { data: null, error: `Invalid JSON: ${text.slice(0, 100)}`, success: false }
+      return { data: null, error: `Invalid JSON response`, success: false }
     }
 
     return { data: data as T, error: null, success: true }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
-    console.error(`[unblockpay] ${path} → fetch failed: ${message}`)
     return { data: null, error: message, success: false }
   }
 }
 
 export async function getCustomers(): Promise<ApiResponse<Customer[]>> {
-  const res = await callApi<unknown>('/customers')
+  const res = await callApi<unknown>('/v1/customers')
   if (!res.success || !res.data) return { data: null, error: res.error, success: false }
 
-  // Handle wrapped responses: { customers: [...] } | { data: [...] } | [...]
   const raw = res.data
   const list = Array.isArray(raw)
     ? raw
@@ -61,16 +54,12 @@ export async function getCustomers(): Promise<ApiResponse<Customer[]>> {
         ? (raw as { data: Customer[] }).data
         : null
 
-  if (!list) {
-    console.error('[unblockpay] /customers unexpected shape:', JSON.stringify(raw).slice(0, 200))
-    return { data: null, error: 'Unexpected API response shape for customers', success: false }
-  }
-
+  if (!list) return { data: null, error: 'Unexpected response shape', success: false }
   return { data: list, error: null, success: true }
 }
 
 export async function getTransactions(customerId: string): Promise<ApiResponse<Transaction[]>> {
-  const res = await callApi<unknown>(`/customers/${customerId}/transactions`)
+  const res = await callApi<unknown>(`/v1/customers/${customerId}/transactions`)
   if (!res.success || !res.data) return { data: null, error: res.error, success: false }
 
   const raw = res.data
@@ -82,14 +71,10 @@ export async function getTransactions(customerId: string): Promise<ApiResponse<T
         ? (raw as { data: Transaction[] }).data
         : null
 
-  if (!list) {
-    console.error('[unblockpay] /transactions unexpected shape:', JSON.stringify(raw).slice(0, 200))
-    return { data: null, error: 'Unexpected API response shape for transactions', success: false }
-  }
-
+  if (!list) return { data: null, error: 'Unexpected response shape', success: false }
   return { data: list, error: null, success: true }
 }
 
 export async function getTransaction(id: string): Promise<ApiResponse<Transaction>> {
-  return callApi<Transaction>(`/transactions/${id}`)
+  return callApi<Transaction>(`/v1/transactions/${id}`)
 }
