@@ -1,56 +1,25 @@
 export const dynamic = 'force-dynamic'
 
-import { getCustomers, getTransactions } from '@/lib/unblockpay'
-import { MOCK_CUSTOMERS, MOCK_TRANSACTIONS } from '@/lib/mock-data'
+import { getStoredCustomers, getStoredTransactions } from '@/lib/storage'
 import { Customer, Transaction, TransactionStatus } from '@/types'
 import StatusBadge from '@/components/StatusBadge'
 import MockDataBanner from '@/components/MockDataBanner'
 
 async function fetchAgencies() {
-  try {
-    const customersRes = await getCustomers()
+  const [{ data: customers, mock: mockC }, { data: transactions, mock: mockT }] =
+    await Promise.all([getStoredCustomers(), getStoredTransactions()])
 
-    if (!customersRes.success || !customersRes.data) {
-      return buildAgencyList(MOCK_CUSTOMERS, buildTxMap(MOCK_TRANSACTIONS), true)
-    }
+  const mock = mockC || mockT
 
-    const customers = customersRes.data
-    const txMap: Record<string, Transaction[]> = {}
-
-    await Promise.all(
-      customers.map(async (c) => {
-        const txRes = await getTransactions(c.id)
-        txMap[c.id] = txRes.success && txRes.data ? txRes.data : []
-      })
-    )
-
-    const agencies = buildAgencyList(customers, txMap, false)
-    if (agencies.list.length === 0) {
-      return buildAgencyList(MOCK_CUSTOMERS, buildTxMap(MOCK_TRANSACTIONS), true)
-    }
-    return agencies
-  } catch {
-    return buildAgencyList(MOCK_CUSTOMERS, buildTxMap(MOCK_TRANSACTIONS), true)
-  }
-}
-
-function buildTxMap(txs: Transaction[]) {
-  const map: Record<string, Transaction[]> = {}
-  for (const t of txs) {
+  const txMap: Record<string, Transaction[]> = {}
+  for (const t of transactions) {
     if (t.customer_id) {
-      map[t.customer_id] = map[t.customer_id] ?? []
-      map[t.customer_id].push(t)
+      txMap[t.customer_id] = txMap[t.customer_id] ?? []
+      txMap[t.customer_id].push(t)
     }
   }
-  return map
-}
 
-function buildAgencyList(
-  customers: Customer[],
-  txMap: Record<string, Transaction[]>,
-  mock: boolean
-) {
-  const list = customers.map((c) => {
+  const list = customers.map((c: Customer) => {
     const txs = txMap[c.id] ?? []
     const completed = txs.filter((t) => t.status === TransactionStatus.completed)
     const tpv = completed.reduce((sum, t) => sum + t.sender.amount, 0)

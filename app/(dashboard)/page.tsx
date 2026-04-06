@@ -1,5 +1,4 @@
-import { getCustomers, getTransactions } from '@/lib/unblockpay'
-import { MOCK_CUSTOMERS, MOCK_TRANSACTIONS } from '@/lib/mock-data'
+import { getStoredTransactions } from '@/lib/storage'
 import { Transaction, TransactionStatus } from '@/types'
 import StatCard from '@/components/StatCard'
 import TpvChartWrapper from '@/components/TpvChartWrapper'
@@ -7,35 +6,6 @@ import TransactionTable from '@/components/TransactionTable'
 import MockDataBanner from '@/components/MockDataBanner'
 
 export const dynamic = 'force-dynamic'
-
-async function fetchData() {
-  try {
-    const customersRes = await getCustomers()
-    if (!customersRes.success || !customersRes.data) {
-      return { transactions: MOCK_TRANSACTIONS, customers: MOCK_CUSTOMERS, mock: true }
-    }
-
-    const customers = customersRes.data
-    const allTxs: Transaction[] = []
-
-    await Promise.all(
-      customers.map(async (customer) => {
-        const txRes = await getTransactions(customer.id)
-        if (txRes.success && txRes.data) {
-          allTxs.push(...txRes.data.map((t) => ({ ...t, customer_id: customer.id })))
-        }
-      })
-    )
-
-    if (allTxs.length === 0) {
-      return { transactions: MOCK_TRANSACTIONS, customers: MOCK_CUSTOMERS, mock: true }
-    }
-
-    return { transactions: allTxs, customers, mock: false }
-  } catch {
-    return { transactions: MOCK_TRANSACTIONS, customers: MOCK_CUSTOMERS, mock: true }
-  }
-}
 
 function buildMetrics(transactions: Transaction[]) {
   const completed = transactions.filter((t) => t.status === TransactionStatus.completed)
@@ -69,7 +39,7 @@ function formatUSD(amount: number) {
 }
 
 export default async function OverviewPage() {
-  const { transactions, mock } = await fetchData()
+  const { data: transactions, mock } = await getStoredTransactions()
   const { tpv_total, tx_count, avg_ticket, success_rate, tpv_by_day } =
     buildMetrics(transactions)
 
@@ -86,7 +56,6 @@ export default async function OverviewPage() {
 
       <MockDataBanner show={mock} />
 
-      {/* Stat cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard label="TPV Total" value={formatUSD(tpv_total)} />
         <StatCard label="Total de Transações" value={tx_count} />
@@ -94,7 +63,6 @@ export default async function OverviewPage() {
         <StatCard label="Ticket Médio" value={formatUSD(avg_ticket)} />
       </div>
 
-      {/* Chart */}
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-sm font-semibold text-gray-700">
           TPV — últimos 14 dias
@@ -102,7 +70,6 @@ export default async function OverviewPage() {
         <TpvChartWrapper data={tpv_by_day} />
       </div>
 
-      {/* Recent transactions */}
       <div>
         <h2 className="mb-3 text-sm font-semibold text-gray-700">
           Transações recentes
