@@ -6,7 +6,7 @@ export function proxy(request: NextRequest) {
 
   const isLoginPage = pathname === '/login'
   const isAuthApi = pathname.startsWith('/api/auth')
-  const isWebhook = pathname.startsWith('/api/webhooks')
+  const isWebhook = pathname.startsWith('/api/webhooks') || pathname.startsWith('/api/debug/echo')
   const isPublicAsset = pathname.startsWith('/_next') || pathname === '/favicon.ico'
 
   if (isLoginPage || isAuthApi || isWebhook || isPublicAsset) {

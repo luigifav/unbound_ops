@@ -14,9 +14,10 @@ export async function GET() {
   try {
     const redis = new Redis({ url, token })
 
-    const [transactions, customers] = await Promise.all([
+    const [transactions, customers, lastEcho] = await Promise.all([
       redis.get('unbound:transactions'),
       redis.get('unbound:customers'),
+      redis.get('unbound:last_echo'),
     ])
 
     const txArray = Array.isArray(transactions) ? transactions : []
@@ -27,6 +28,7 @@ export async function GET() {
       transactions_count: txArray.length,
       customers_count: cusArray.length,
       latest_transaction: txArray[0] ?? null,
+      last_echo: lastEcho ?? null,
     })
   } catch (e) {
     return NextResponse.json({ error: String(e) })
