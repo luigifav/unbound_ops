@@ -61,10 +61,13 @@ async function callApi<T>(path: string): Promise<ApiResponse<T>> {
     if (hasSigV4Config()) {
       res = await signedFetch(url)
     } else {
+      // Without AWS credentials we can't sign the request — send x-api-key only
+      // and let the error surface clearly. Configure AWS_ACCESS_KEY_ID +
+      // AWS_SECRET_ACCESS_KEY in Vercel for full SigV4 auth.
       res = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: apiKey.trim(),
+          'x-api-key': apiKey.trim(),
         },
         cache: 'no-store',
       })
