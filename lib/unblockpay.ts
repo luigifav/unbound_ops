@@ -73,11 +73,9 @@ async function callApi<T>(path: string): Promise<ApiResponse<T>> {
     const text = await res.text()
 
     if (!res.ok) {
-      return {
-        data: null,
-        error: `API error: ${res.status} — ${text.slice(0, 200)}`,
-        success: false,
-      }
+      const errMsg = `API error: ${res.status} — ${text.slice(0, 200)}`
+      console.error(`[unblockpay] ${errMsg} | url=${url}`)
+      return { data: null, error: errMsg, success: false }
     }
 
     let data: unknown
@@ -90,6 +88,7 @@ async function callApi<T>(path: string): Promise<ApiResponse<T>> {
     return { data: data as T, error: null, success: true }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
+    console.error(`[unblockpay] fetch error: ${message} | url=${url}`)
     return { data: null, error: message, success: false }
   }
 }
@@ -130,4 +129,26 @@ export async function getTransactions(customerId: string): Promise<ApiResponse<T
 
 export async function getTransaction(id: string): Promise<ApiResponse<Transaction>> {
   return callApi<Transaction>(`/v1/transactions/${id}`)
+}
+
+export async function getAllTransactions(): Promise<ApiResponse<Transaction[]>> {
+  const res = await callApi<unknown>('/v1/transactions')
+  if (!res.success || !res.data) return { data: null, error: res.error, success: false }
+
+  const raw = res.data
+  const list = Array.isArray(raw)
+    ? raw
+    : Array.isArray((raw as Record<string, unknown>).transactions)
+      ? (raw as { transactions: Transaction[] }).transactions
+      : Array.isArray((raw as Record<string, unknown>).data)
+        ? (raw as { data: Transaction[] }).data
+        : Array.isArray((raw as Record<string, unknown>).items)
+          ? (raw as { items: Transaction[] }).items
+          : null
+
+  if (!list) {
+    console.error('[unblockpay] getAllTransactions: unexpected response shape', JSON.stringify(raw).slice(0, 300))
+    return { data: null, error: 'Unexpected response shape', success: false }
+  }
+  return { data: list, error: null, success: true }
 }

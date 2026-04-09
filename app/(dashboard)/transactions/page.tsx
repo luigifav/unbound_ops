@@ -32,15 +32,15 @@ const RAIL_OPTIONS = [
 ]
 
 function TypeBadge({ type }: { type: TransactionType }) {
+  const config: Record<string, { className: string; label: string }> = {
+    [TransactionType.on_ramp]: { className: 'bg-purple-100 text-purple-700', label: 'On Ramp' },
+    [TransactionType.off_ramp]: { className: 'bg-indigo-100 text-indigo-700', label: 'Off Ramp' },
+    [TransactionType.wallet_transfer]: { className: 'bg-gray-100 text-gray-700', label: 'Wallet Transfer' },
+  }
+  const { className, label } = config[type] ?? { className: 'bg-gray-100 text-gray-500', label: type }
   return (
-    <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-        type === TransactionType.on_ramp
-          ? 'bg-purple-100 text-purple-700'
-          : 'bg-indigo-100 text-indigo-700'
-      }`}
-    >
-      {type === TransactionType.on_ramp ? 'payin' : 'payout'}
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${className}`}>
+      {label}
     </span>
   )
 }
