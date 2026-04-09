@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getStoredTransactions } from '@/lib/storage'
+import { getLiveTransactions } from '@/lib/data'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const railFilter = searchParams.get('rail')
   const limit = parseInt(searchParams.get('limit') ?? '500', 10)
 
-  const { data: allTxs, mock } = await getStoredTransactions()
+  const { data: allTxs, mock } = await getLiveTransactions()
 
   let filtered = [...allTxs].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()

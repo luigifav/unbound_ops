@@ -1,13 +1,13 @@
 export const dynamic = 'force-dynamic'
 
-import { getStoredCustomers, getStoredTransactions } from '@/lib/storage'
+import { getLiveCustomers, getLiveTransactions } from '@/lib/data'
 import { Customer, Transaction, TransactionStatus } from '@/types'
 import StatusBadge from '@/components/StatusBadge'
 import MockDataBanner from '@/components/MockDataBanner'
 
 async function fetchClientes() {
   const [{ data: customers, mock: mockC }, { data: transactions, mock: mockT }] =
-    await Promise.all([getStoredCustomers(), getStoredTransactions()])
+    await Promise.all([getLiveCustomers(), getLiveTransactions()])
 
   const mock = mockC || mockT
 
