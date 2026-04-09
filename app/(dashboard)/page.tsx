@@ -1,4 +1,4 @@
-import { getStoredTransactions } from '@/lib/storage'
+import { getLiveTransactions } from '@/lib/data'
 import { Transaction, TransactionStatus } from '@/types'
 import StatCard from '@/components/StatCard'
 import TpvChartWrapper from '@/components/TpvChartWrapper'
@@ -39,7 +39,7 @@ function formatUSD(amount: number) {
 }
 
 export default async function OverviewPage() {
-  const { data: transactions, mock } = await getStoredTransactions()
+  const { data: transactions, mock } = await getLiveTransactions()
   const { tpv_total, tx_count, avg_ticket, success_rate, tpv_by_day } =
     buildMetrics(transactions)
 
