@@ -11,6 +11,7 @@ export enum TransactionStatus {
 export enum TransactionType {
   on_ramp = 'on_ramp',
   off_ramp = 'off_ramp',
+  wallet_transfer = 'wallet_transfer',
 }
 
 export interface TransactionSender {
